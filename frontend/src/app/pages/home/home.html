@@ -1,0 +1,75 @@
+<div class="p-6 max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Invoice List</h1>
+
+    <!-- Upload CSV Section -->
+    <div class="flex items-center gap-4 mb-4">
+        <input type="file" (change)="handleFileChange($event)" class="border px-2 py-1 rounded" />
+        <button (click)="upload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Upload CSV
+        </button>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="uploadSuccess$ | async" class="text-green-600 font-medium mb-4">
+        File uploaded successfully!
+    </div>
+
+    <!-- Error Message List -->
+    <div *ngIf="(uploadErrors$ | async)?.length" class="bg-red-100 border border-red-400 text-red-800 p-4 rounded mb-4">
+        <strong class="block mb-2">Upload failed with the following errors:</strong>
+        <ul class="list-disc pl-5">
+            <li *ngFor="let error of (uploadErrors$ | async)">
+                {{ error }}
+            </li>
+        </ul>
+    </div>
+
+    <!-- existing content above... -->
+
+    <!-- Invoice Table -->
+    <table class="min-w-full border border-gray-300 text-sm" *ngIf="invoices$ | async as invoices">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="border p-2">Customer ID</th>
+                <th class="border p-2">Invoice #</th>
+                <th class="border p-2">Date</th>
+                <th class="border p-2">Description</th>
+                <th class="border p-2">Amount</th>
+                <th class="border p-2">Invoice Age (Days)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let inv of paginatedInvoices(invoices)">
+                <td class="border p-2">{{ inv.customerId }}</td>
+                <td class="border p-2">{{ inv.invoiceNumber }}</td>
+                <td class="border p-2">{{ inv.invoiceDate }}</td>
+                <td class="border p-2">{{ inv.description }}</td>
+                <td class="border p-2">₹{{ inv.amount.toFixed(2) }}</td>
+                <td class="border p-2">{{ getInvoiceAge(inv.invoiceDate) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="mt-4 flex justify-center items-center gap-2" *ngIf="invoices$ | async as invoices">
+        <button class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" [disabled]="currentPage() === 1"
+            (click)="setPage(currentPage() - 1)">
+            Previous
+        </button>
+
+        <ng-container *ngFor="let page of [].constructor(totalPages(invoices)); let i = index">
+            <button class="px-3 py-1 rounded" [ngClass]="{
+                'bg-blue-500 text-white': currentPage() === i + 1,
+                'bg-gray-200': currentPage() !== i + 1
+            }" (click)="setPage(i + 1)">
+                {{ i + 1 }}
+            </button>
+        </ng-container>
+
+        <button class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+            [disabled]="currentPage() === totalPages(invoices)" (click)="setPage(currentPage() + 1)">
+            Next
+        </button>
+    </div>
+
+</div>
